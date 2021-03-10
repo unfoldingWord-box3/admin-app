@@ -42,7 +42,6 @@ export async function manifestExists(username, repository, tokenid) {
       try {
         let manifestJson = yaml.parse(manifestContents);
         manifestInfo.valid = true;
-        console.log("manifestJson:", manifestJson)
         if ( manifestJson.dublin_core.format ) manifestInfo.format = manifestJson.dublin_core.format;
       }
       catch (yamlError) {
