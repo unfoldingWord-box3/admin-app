@@ -84,7 +84,6 @@ export async function repoCreate({username, repository, tokenid}) {
 // template: /repos/{owner}/{repo}/contents/{filepath}
 export async function manifestCreate({username, repository, tokenid}) {
   const resourceId = repository.split('_')[1];
-  console.log("rid=",resourceId);
   const manifest = getResourceManifest( {resourceId} );
   const content = base64.encode(utf8.encode(manifest));
   const uri = Path.join(base_url,apiPath,'repos',username,repository,'contents','manifest.yaml') ;

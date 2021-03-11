@@ -74,7 +74,6 @@ function CreateRepoButton({active, owner, languageId, resourceId, refresh }) {
           setErrorMessage('Repo created, but manifest creation failed with Error: '+manifestCreateRes.status+' ('+manifestCreateRes.statusText+')')
           setShowError(true)
         }
-        console.log("manifest create response:", manifestCreateRes)
       } else {
           console.log('response:', res)
           setErrorMessage('Error: '+res.status+' ('+res.statusText+')')
