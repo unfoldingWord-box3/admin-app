@@ -1,10 +1,11 @@
 import {useState, useEffect, useContext} from 'react'
-import Path from 'path';
+//import Path from 'path';
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import MuiAlert from '@material-ui/lab/Alert'
-import { base_url, apiPath } from '@common/constants'
+//import { base_url, apiPath } from '@common/constants'
 import { AuthContext } from '@context/AuthContext'
+import * as dcsApis from '@utils/dcsApis'
 
 
 function Alert({ severity, message, onDismiss }) {
@@ -50,76 +51,66 @@ function CreateRepoButton({active, owner, languageId, resourceId, refresh }) {
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
    
-    useEffect(() => {
-        if ( !submitCreate ) return;
+  useEffect(() => {
+    if ( !submitCreate ) return;
 
-        if ( owner.toLowerCase() === 'unfoldingword') {
-          if ( resourceId === 'glt' ) resourceId = 'ult';
-          if ( resourceId === 'gst' ) resourceId = 'ust';
-        }
-      
-        const rid = languageId + '_' + resourceId.toLowerCase();
-        
-        async function doSubmitCreate() {
-          //console.log("auth=",authentication);
-          const tokenid = authentication.token.sha1;
-          const uri = Path.join(base_url,apiPath,'orgs',owner,'repos') ;
-          const res = await fetch(uri+'?token='+tokenid, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: `{
-              "auto_init": true,
-              "default_branch": "master",
-              "description": "Init New Repo by Admin App",
-              "gitignores": "macOS",
-              "issue_labels": "",
-              "license": "CC-BY-SA-4.0.md",
-              "name": "${rid}",
-              "private": false,
-              "readme": "",
-              "template": true,
-              "trust_model": "default"
-            }`
-          })
-        
-          if (res.status === 201) {
-            setShowSuccess(true)
-          } else {
-              console.log('response:', res)
-              setErrorMessage('Error: '+res.status+' ('+res.statusText+')')
-              setShowError(true)
-          }
-        
-        }
-        
-        doSubmitCreate();
-        setSubmitCreate(false);
-      }, [submitCreate, owner, languageId, resourceId])
+    if ( owner.toLowerCase() === 'unfoldingword') {
+      if ( resourceId === 'glt' ) resourceId = 'ult';
+      if ( resourceId === 'gst' ) resourceId = 'ust';
+    }
+  
+    const rid = languageId + '_' + resourceId.toLowerCase();
     
-    function dismissAlert() {
-      setShowError(false);
-      setShowSuccess(false);
-      refresh(true);
+    async function doSubmitCreate() {
+      const tokenid = authentication.token.sha1;
+      const res = await dcsApis.repoCreate({username: owner, repository: rid, tokenid})
+    
+      if (res.status === 201) {
+        setShowSuccess(true)
+        const manifestCreateRes = await dcsApis.manifestCreate({username: owner, repository: rid, tokenid})
+        if ( manifestCreateRes.status === 201 ) {
+          setShowSuccess(true)
+        } else {
+          setErrorMessage('Repo created, but manifest creation failed with Error: '+manifestCreateRes.status+' ('+manifestCreateRes.statusText+')')
+          setShowError(true)
+        }
+        console.log("manifest create response:", manifestCreateRes)
+      } else {
+          console.log('response:', res)
+          setErrorMessage('Error: '+res.status+' ('+res.statusText+')')
+          setShowError(true)
+      }
+    
     }
     
-    const classes = useStyles({ active })
-    return (
-      <div>
-        <Button className={classes.root} onClick={() => setSubmitCreate(true)} >
-            Create Repo
-        </Button>
-        {showSuccess || showError ? (
-            <Alert
-              onDismiss={() => dismissAlert()}
-              severity={showSuccess ? 'success' : 'error'}
-              message={
-              showSuccess
-                  ? `Repo Created!`
-                  : errorMessage
-              }
-            />
-        ) : null}
-      </div>
+    doSubmitCreate();
+    setSubmitCreate(false);
+  }, [submitCreate, owner, languageId, resourceId])
+    
+  function dismissAlert() {
+    setShowError(false);
+    setShowSuccess(false);
+    refresh(true);
+  }
+    
+  const classes = useStyles({ active })
+  return (
+    <div>
+      <Button className={classes.root} onClick={() => setSubmitCreate(true)} >
+          Create Repo
+      </Button>
+      {showSuccess || showError ? (
+          <Alert
+            onDismiss={() => dismissAlert()}
+            severity={showSuccess ? 'success' : 'error'}
+            message={
+            showSuccess
+                ? `Repo Created!`
+                : errorMessage
+            }
+          />
+      ) : null}
+    </div>
   )
 }
 
