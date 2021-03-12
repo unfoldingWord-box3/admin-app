@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function RenameRepoButton({ active, owner, languageId, resourceId }) {
+function RenameRepoButton({ active, owner, languageId, resourceId, refresh }) {
   const {authentication} = useContext(AuthContext)
 
   const [repoRename, setRepoRename] = useState('');
@@ -63,75 +63,76 @@ function RenameRepoButton({ active, owner, languageId, resourceId }) {
       setRepoRename(e.target.value)
   }
 
-    async function onSubmitRename() {
-      setSubmitRename(true)
+  async function onSubmitRename() {
+    setSubmitRename(true)
 
-      const rid = languageId + '_' + resourceId.toLowerCase();
+    const rid = languageId + '_' + resourceId.toLowerCase();
 
-      const tokenid = authentication.token.sha1;
-      const uri = Path.join(base_url,apiPath,'repos',owner,repoRename) ;
+    const tokenid = authentication.token.sha1;
+    const uri = Path.join(base_url,apiPath,'repos',owner,repoRename) ;
 
-      const res = await fetch(uri+'?token='+tokenid, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: `{ "name": "${rid}" }`
-        })
-    
-        if (res.status === 200) {
-          setShowSuccess(true)
-        } else {
-            console.log('response:', res)
-            setErrorMessage('Error: '+res.status+' ('+res.statusText+')')
-            setShowError(true)
-        }
+    const res = await fetch(uri+'?token='+tokenid, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: `{ "name": "${rid}" }`
+      })
   
-        setSubmitRename(false)
-    }
-    
-    function dismissAlert() {
-      setShowError(false);
-      setShowSuccess(false);
-    }
+      if (res.status === 200) {
+        setShowSuccess(true)
+      } else {
+          console.log('response:', res)
+          setErrorMessage('Error: '+res.status+' ('+res.statusText+')')
+          setShowError(true)
+      }
 
-    return (
-        <div>
-            <TextField
-                id={resourceId}
-                type='text'
-                label='Repo to rename'
-                defaultValue={repoRename}
-                variant='outlined'
-                onChange={onRepoNameChange}
-                classes={{ root: classes.textField }}
-            />
-            <div className='flex flex-col mx-8 mb-4'>
-                <Button
-                className='self-end'
-                variant='contained'
-                color='primary'
-                size='large'
-                disableElevation
-                disabled={
-                    submitRename || !repoRename
-                }
-                onClick={onSubmitRename}
-                >
-                {submitRename ? 'Submitting' : 'Submit'}
-                </Button>
-                {showSuccess || showError ? (
-                <Alert
-                  onDismiss={() => dismissAlert()}
-                  severity={showSuccess ? 'success' : 'error'}
-                  message={
-                  showSuccess
-                      ? `Repo renamed!`
-                      : errorMessage
-                  }
-                />
-                ) : null}
-            </div>
-        </div>
-    )
+      setSubmitRename(false)
+  }
+  
+  function dismissAlert() {
+    setShowError(false);
+    setShowSuccess(false);
+    refresh(true);
+  }
+
+  return (
+    <div>
+      <TextField
+        id={resourceId}
+        type='text'
+        label='Repo to rename'
+        defaultValue={repoRename}
+        variant='outlined'
+        onChange={onRepoNameChange}
+        classes={{ root: classes.textField }}
+      />
+      <div className='flex flex-col mx-8 mb-4'>
+        <Button
+        className='self-end'
+        variant='contained'
+        color='primary'
+        size='large'
+        disableElevation
+        disabled={
+            submitRename || !repoRename
+        }
+        onClick={onSubmitRename}
+        >
+        {submitRename ? 'Submitting' : 'Submit'}
+        </Button>
+        {showSuccess || showError ? (
+        <Alert
+          onDismiss={() => dismissAlert()}
+          severity={showSuccess ? 'success' : 'error'}
+          message={
+          showSuccess
+              ? `Repo renamed!`
+              : errorMessage
+          }
+        />
+        ) : null}
+      </div>
+    </div>
+  )
 }
 
 export default RenameRepoButton

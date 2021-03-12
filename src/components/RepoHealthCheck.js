@@ -86,7 +86,7 @@ export default function RepoHealthCheck({
         repoExists === false && 
         <div>
           <CreateRepoButton active={true} owner={owner} languageId={languageId} resourceId={resourceId} refresh={setRefresh} />
-          <RenameRepoButton active={true} owner={owner} languageId={languageId} resourceId={resourceId} />
+          <RenameRepoButton active={true} owner={owner} languageId={languageId} resourceId={resourceId} refresh={setRefresh} />
         </div>
       }
     </Paper>
